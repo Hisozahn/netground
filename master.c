@@ -54,7 +54,7 @@ int main() {
     //buffer[n] = '\0'; 
     printf("Client : %s\n", data); 
     strcpy(data, hello);
-    client_address.sll_ifindex = 5;
+    client_address.sll_ifindex = 6; // Bridge
     char s = eh->ether_dhost[5];
     eh->ether_dhost[5] = eh->ether_shost[5];
     eh->ether_shost[5] = s;

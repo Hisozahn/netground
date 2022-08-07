@@ -19,7 +19,7 @@ int main() {
     struct sockaddr_ll server_address = {
         .sll_family = AF_PACKET,
         .sll_protocol = htons(ETH_P_ALL),
-        .sll_ifindex = 4,
+        .sll_ifindex = 6,
         .sll_halen = ETH_ALEN,
         .sll_addr = { 0x62, 0xcd, 0xaa, 0x7a, 0x17, 0xc6 },
     };
