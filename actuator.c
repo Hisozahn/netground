@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <linux/if_packet.h>
 #include <net/ethernet.h>
+#include <arpa/inet.h>
 
 #define MAXLINE 1024 
     
@@ -13,8 +14,8 @@
 int main() { 
     struct sockaddr_ll server_address = {
         .sll_family = AF_PACKET,
-        .sll_protocol = 0,
-        .sll_ifindex = 11,
+        .sll_protocol = htons(ETH_P_ALL),
+        .sll_ifindex = 13,
         .sll_halen = ETH_ALEN,
         .sll_addr = { 0x62, 0xcd, 0xaa, 0x7a, 0x17, 0xc6 },
     };
@@ -30,8 +31,8 @@ int main() {
     } 
     
     if (sendto(sockfd, (const char *)hello, strlen(hello),  
-        MSG_CONFIRM, (const struct sockaddr *) &server_address, 
-            sizeof(server_address) < 0))
+        0, (const struct sockaddr *) &server_address, 
+            sizeof(server_address)) < 0)
     {
         perror("sendto failed");
         exit(EXIT_FAILURE);
@@ -40,7 +41,7 @@ int main() {
     printf("Hello message sent.\n"); 
 
     if (n = recvfrom(sockfd, (char *)buffer, MAXLINE,  
-                MSG_WAITALL, ( struct sockaddr *) &server_address, 
+                MSG_TRUNC, ( struct sockaddr *) &server_address, 
                 NULL) < 0 )
     {
         perror("recvfrom failed");
