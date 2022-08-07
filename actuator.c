@@ -3,9 +3,9 @@
 #include <unistd.h> 
 #include <string.h> 
 #include <sys/types.h> 
-#include <sys/socket.h> 
-#include <arpa/inet.h> 
-#include <netinet/in.h> 
+#include <sys/socket.h>
+#include <linux/if_packet.h>
+#include <net/ethernet.h>
 
 #define MAXLINE 1024 
     
@@ -14,7 +14,7 @@ int main() {
     int sockfd; 
     char buffer[MAXLINE]; 
     char *hello = "Hello from client"; 
-    sockaddr_ll server_address = {
+    struct sockaddr_ll server_address = {
         .sll_family = AF_PACKET,
         .sll_protocol = 0,
         .sll_ifindex = 11,
