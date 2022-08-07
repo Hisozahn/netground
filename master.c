@@ -11,10 +11,6 @@
     
 // Driver code 
 int main() { 
-    int sockfd; 
-    char buffer[MAXLINE]; 
-    char *hello = "Hello from server"; 
-    struct sockaddr_ll client_address = { 0 };
     struct sockaddr_ll server_address = {
         .sll_family = AF_PACKET,
         .sll_protocol = 0,
@@ -22,6 +18,12 @@ int main() {
         .sll_halen = ETH_ALEN,
         .sll_addr = { 0x62, 0xcd, 0xaa, 0x7a, 0x17, 0xc6 },
     };
+    struct sockaddr_ll client_address = { 0 };
+    char *hello = "Hello from server"; 
+    char buffer[MAXLINE]; 
+    int sockfd; 
+    int len;
+    int n; 
 
     // Creating socket file descriptor 
     if ( (sockfd = socket(AF_PACKET, SOCK_DGRAM, 0)) < 0 ) { 
@@ -36,20 +38,28 @@ int main() {
         perror("bind failed"); 
         exit(EXIT_FAILURE); 
     } 
-        
-    int len, n; 
     
     len = sizeof(client_address);  //len is value/result 
     
-    n = recvfrom(sockfd, (char *)buffer, MAXLINE,  
+    if (n = recvfrom(sockfd, (char *)buffer, MAXLINE,  
                 MSG_WAITALL, ( struct sockaddr *) &client_address, 
-                &len); 
+                &len) < 0)
+    {
+        perror("recvfrom failed");
+        exit(EXIT_FAILURE);
+    } 
     buffer[n] = '\0'; 
     printf("Client : %s\n", buffer); 
-    sendto(sockfd, (const char *)hello, strlen(hello),  
+
+    if (sendto(sockfd, (const char *)hello, strlen(hello),  
         MSG_CONFIRM, (const struct sockaddr *) &client_address, 
-            len); 
-    printf("Hello message sent.\n");  
-        
+            len) < 0)
+    {
+        perror("sendto failed"); 
+        exit(EXIT_FAILURE);
+    }
+
+    printf("Hello message sent.\n");
+    close(sockfd);
     return 0; 
 }

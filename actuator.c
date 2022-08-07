@@ -11,9 +11,6 @@
     
 // Driver code 
 int main() { 
-    int sockfd; 
-    char buffer[MAXLINE]; 
-    char *hello = "Hello from client"; 
     struct sockaddr_ll server_address = {
         .sll_family = AF_PACKET,
         .sll_protocol = 0,
@@ -21,24 +18,34 @@ int main() {
         .sll_halen = ETH_ALEN,
         .sll_addr = { 0x62, 0xcd, 0xaa, 0x7a, 0x17, 0xc6 },
     };
+    char *hello = "Hello from client"; 
+    char buffer[MAXLINE]; 
+    int sockfd; 
+    int n; 
 
     // Creating socket file descriptor 
     if ( (sockfd = socket(AF_PACKET, SOCK_DGRAM, 0)) < 0 ) { 
         perror("socket creation failed"); 
         exit(EXIT_FAILURE); 
     } 
-        
-    int len, n; 
     
-    sendto(sockfd, (const char *)hello, strlen(hello),  
+    if (sendto(sockfd, (const char *)hello, strlen(hello),  
         MSG_CONFIRM, (const struct sockaddr *) &server_address, 
-            sizeof(server_address)); 
+            sizeof(server_address) < 0))
+    {
+        perror("sendto failed");
+        exit(EXIT_FAILURE);
+    }
 
     printf("Hello message sent.\n"); 
 
-    n = recvfrom(sockfd, (char *)buffer, MAXLINE,  
+    if (n = recvfrom(sockfd, (char *)buffer, MAXLINE,  
                 MSG_WAITALL, ( struct sockaddr *) &server_address, 
-                NULL); 
+                NULL) < 0 )
+    {
+        perror("recvfrom failed");
+        exit(EXIT_FAILURE);
+    } 
     buffer[n] = '\0'; 
     printf("Server: %s\n", buffer); 
 
