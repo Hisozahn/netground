@@ -1,0 +1,19 @@
+127  sudo ip link add virt0 type dummy
+128  sudo ip link add virt1 type dummy
+129  ip link
+130  sudo ifconfig virt0 hw ether 62:cd:aa:7a:17:c6
+131  ip link
+132  sudo ifconfig virt1 hw ether 62:cd:aa:7a:17:c7
+133  ip link
+134  brctl addbr br0
+135  sudo brctl addbr br0
+136  sudo brctl addif virt0
+137  sudo brctl addif virt0 device
+138  sudo brctl addif br0 virt0
+139  sudo brctl addif br0 virt1
+140  ip link
+141  sudo ip link set br0 up
+142  sudo ip link set virt0 up
+143  sudo ip link set virt1 up
+144  ip link
+145  sudo tcpdump -a -vv -i virt0

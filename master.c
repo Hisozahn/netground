@@ -49,7 +49,7 @@ int main() {
         perror("recvfrom failed");
         exit(EXIT_FAILURE);
     } 
-    buffer[n] = '\0'; 
+    //buffer[n] = '\0'; 
     printf("Client : %s\n", buffer); 
 
     if (sendto(sockfd, (const char *)hello, strlen(hello),  
