@@ -19,9 +19,16 @@ int main() {
     struct sockaddr_ll server_address = {
         .sll_family = AF_PACKET,
         .sll_protocol = htons(ETH_P_ALL),
-        .sll_ifindex = 13,
+        .sll_ifindex = 4,
         .sll_halen = ETH_ALEN,
         .sll_addr = { 0x62, 0xcd, 0xaa, 0x7a, 0x17, 0xc6 },
+    };
+    struct sockaddr_ll client_address = {
+        .sll_family = AF_PACKET,
+        .sll_protocol = htons(ETH_P_ALL),
+        .sll_ifindex = 5,
+        .sll_halen = ETH_ALEN,
+        .sll_addr = { 0x62, 0xcd, 0xaa, 0x7a, 0x17, 0xc7 },
     };
     char *hello = "Hello from client"; 
     char buffer[MAXLINE]; 
@@ -39,7 +46,14 @@ int main() {
     if ( (sockfd = socket(AF_PACKET, SOCK_RAW, 0)) < 0 ) { 
         perror("socket creation failed"); 
         exit(EXIT_FAILURE); 
-    } 
+    }
+
+    if ( bind(sockfd, (const struct sockaddr *)&client_address,
+            sizeof(client_address)) < 0 )
+    {
+        perror("bind failed");
+        exit(EXIT_FAILURE);
+    }
     
     if (sendto(sockfd, (const char *)buffer, strlen(hello) + sizeof(struct ether_header),  
         0, (const struct sockaddr *) &server_address, 
@@ -50,16 +64,17 @@ int main() {
     }
 
     printf("Hello message sent.\n"); 
+    int len = sizeof (server_address);
 
     if (n = recvfrom(sockfd, (char *)buffer, MAXLINE,  
                 MSG_TRUNC, ( struct sockaddr *) &server_address, 
-                NULL) < 0 )
+                &len) < 0 )
     {
         perror("recvfrom failed");
         exit(EXIT_FAILURE);
     } 
     buffer[n] = '\0'; 
-    printf("Server: %s\n", buffer + sizeof(struct ether_header)); 
+    printf("Server: %s\n", data); 
 
     close(sockfd);
     return 0; 
