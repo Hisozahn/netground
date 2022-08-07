@@ -8,10 +8,14 @@
 #include <net/ethernet.h>
 #include <arpa/inet.h>
 
-#define MAXLINE 1024 
+#define MAXLINE 1024
+#define ETHER_TYPE 0x0899 // Custom
+#define ADDR_SIZE 6
     
 // Driver code 
 int main() { 
+    const char server_addr[] = { 0x62, 0xcd, 0xaa, 0x7a, 0x17, 0xc6 };
+    const char client_addr[] = { 0x62, 0xcd, 0xaa, 0x7a, 0x17, 0xc7 };
     struct sockaddr_ll server_address = {
         .sll_family = AF_PACKET,
         .sll_protocol = htons(ETH_P_ALL),
@@ -21,16 +25,23 @@ int main() {
     };
     char *hello = "Hello from client"; 
     char buffer[MAXLINE]; 
+    struct ether_header *eh = (struct ether_header *) buffer;
+    char *data = &(buffer[0]) + sizeof(struct ether_header);
     int sockfd; 
-    int n; 
+    int n;
+
+    strcpy(data, hello);
+    eh->ether_type = htons(ETHER_TYPE);
+    memcpy(eh->ether_dhost, server_addr, ADDR_SIZE);
+    memcpy(eh->ether_shost, client_addr, ADDR_SIZE);
 
     // Creating socket file descriptor 
-    if ( (sockfd = socket(AF_PACKET, SOCK_DGRAM, 0)) < 0 ) { 
+    if ( (sockfd = socket(AF_PACKET, SOCK_RAW, 0)) < 0 ) { 
         perror("socket creation failed"); 
         exit(EXIT_FAILURE); 
     } 
     
-    if (sendto(sockfd, (const char *)hello, strlen(hello),  
+    if (sendto(sockfd, (const char *)buffer, strlen(hello) + sizeof(struct ether_header),  
         0, (const struct sockaddr *) &server_address, 
             sizeof(server_address)) < 0)
     {
@@ -48,7 +59,7 @@ int main() {
         exit(EXIT_FAILURE);
     } 
     buffer[n] = '\0'; 
-    printf("Server: %s\n", buffer); 
+    printf("Server: %s\n", buffer + sizeof(struct ether_header)); 
 
     close(sockfd);
     return 0; 
