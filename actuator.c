@@ -8,27 +8,44 @@
 #include <net/ethernet.h>
 #include <arpa/inet.h>
 
+#include "parser.h"
+
 #define MAXLINE 1024
 #define ETHER_TYPE 0x0899 // Custom
-#define ADDR_SIZE 6
+
+static void
+parse_arguments(int argc, char *argv[],
+                int *rx_ifindex,
+                int *tx_ifindex,
+                unsigned char rx_address[8],
+                unsigned char tx_address[8])
+{
+    if (argc != 5) {
+        printf("Wrong argument count, expected 4");
+        exit(EXIT_FAILURE);
+    }
+    
+    *rx_ifindex = (unsigned short)atoi(argv[1]);
+    *tx_ifindex = (unsigned short)atoi(argv[2]);
+    parse_mac(argv[3], rx_address);
+    parse_mac(argv[4], tx_address);
+}
     
 // Driver code 
-int main() { 
-    const char server_addr[] = { 0x62, 0xcd, 0xaa, 0x7a, 0x17, 0xc6 };
-    const char client_addr[] = { 0x62, 0xcd, 0xaa, 0x7a, 0x17, 0xc7 };
+int main(int argc, char *argv[]) { 
     struct sockaddr_ll server_address = {
         .sll_family = AF_PACKET,
         .sll_protocol = htons(ETH_P_ALL),
-        .sll_ifindex = 6,
+        //.sll_ifindex = 6,
         .sll_halen = ETH_ALEN,
-        .sll_addr = { 0x62, 0xcd, 0xaa, 0x7a, 0x17, 0xc6 },
+        //.sll_addr = { 0x62, 0xcd, 0xaa, 0x7a, 0x17, 0xc6 },
     };
     struct sockaddr_ll client_address = {
         .sll_family = AF_PACKET,
         .sll_protocol = htons(ETH_P_ALL),
-        .sll_ifindex = 5,
+        //.sll_ifindex = 5,
         .sll_halen = ETH_ALEN,
-        .sll_addr = { 0x62, 0xcd, 0xaa, 0x7a, 0x17, 0xc7 },
+        //.sll_addr = { 0x62, 0xcd, 0xaa, 0x7a, 0x17, 0xc7 },
     };
     char *hello = "Hello from client"; 
     char buffer[MAXLINE]; 
@@ -37,10 +54,13 @@ int main() {
     int sockfd; 
     int n;
 
+    parse_arguments(argc, argv, &client_address.sll_ifindex, &server_address.sll_ifindex,
+                    client_address.sll_addr, server_address.sll_addr);
+
     strcpy(data, hello);
     eh->ether_type = htons(ETHER_TYPE);
-    memcpy(eh->ether_dhost, server_addr, ADDR_SIZE);
-    memcpy(eh->ether_shost, client_addr, ADDR_SIZE);
+    memcpy(eh->ether_dhost, server_address.sll_addr, ETHER_ADDR_LEN);
+    memcpy(eh->ether_shost, client_address.sll_addr, ETHER_ADDR_LEN);
 
     // Creating socket file descriptor 
     if ( (sockfd = socket(AF_PACKET, SOCK_RAW, 0)) < 0 ) { 

@@ -8,25 +8,44 @@
 #include <net/ethernet.h>
 #include <arpa/inet.h>
 
-#define MAXLINE 1024 
+#include "parser.h"
+
+#define MAXLINE 1024
+
+static void
+parse_arguments(int argc, char *argv[],
+                int *rx_ifindex,
+                int *tx_ifindex,
+                unsigned char address[8])
+{
+    if (argc != 4) {
+        printf("Wrong argument count, expected 3");
+        exit(EXIT_FAILURE);
+    }
+    
+    *rx_ifindex = (unsigned short)atoi(argv[1]);
+    *tx_ifindex = (unsigned short)atoi(argv[2]);
+    parse_mac(argv[3], address);
+}
     
 // Driver code 
-int main() { 
+int main(int argc, char *argv[]) { 
     struct sockaddr_ll server_address = {
         .sll_family = AF_PACKET,
         .sll_protocol = htons(ETH_P_ALL),
-        .sll_ifindex = 4,
         .sll_halen = ETH_ALEN,
-        .sll_addr = { 0x62, 0xcd, 0xaa, 0x7a, 0x17, 0xc6 }, // 62:cd:aa:7a:17:c6
     };
     struct sockaddr_ll client_address = { 0 };
     char *hello = "Hello from server"; 
     char buffer[MAXLINE]; 
     struct ether_header *eh = (struct ether_header *) buffer;
     char *data = &(buffer[0]) + sizeof(struct ether_header);
+    int tx_ifindex;
     int sockfd; 
     int len;
     int n; 
+
+    parse_arguments(argc, argv, &server_address.sll_ifindex, &tx_ifindex, server_address.sll_addr);
 
     // Creating socket file descriptor 
     if ( (sockfd = socket(AF_PACKET, SOCK_RAW, 0)) < 0 ) { 
