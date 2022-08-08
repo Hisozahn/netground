@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#include "parser.h"
+#include "helpers.h"
 
 void
 parse_mac(const char *str, unsigned char address[8])

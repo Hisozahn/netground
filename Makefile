@@ -1,7 +1,7 @@
 all: master actuator
 
 master:
-	gcc master.c parser.c -o build/master -g3
+	gcc master.c helpers.c -o build/master -g3
 
 actuator:
-	gcc actuator.c parser.c -o build/actuator -g3
+	gcc actuator.c helpers.c -o build/actuator -g3

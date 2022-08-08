@@ -8,7 +8,7 @@
 #include <net/ethernet.h>
 #include <arpa/inet.h>
 
-#include "parser.h"
+#include "helpers.h"
 
 #define MAXLINE 1024
 
@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE); 
     } 
     
-    len = sizeof(client_address);  //len is value/result 
+    len = sizeof(client_address);
     
     if (n = recvfrom(sockfd, (char *)buffer, MAXLINE,  
                 MSG_TRUNC, ( struct sockaddr *) &client_address, 
@@ -73,13 +73,12 @@ int main(int argc, char *argv[]) {
     buffer[n] = '\0'; 
     printf("Client : %s\n", data); 
     strcpy(data, hello);
-    client_address.sll_ifindex = 6; // Bridge
+    client_address.sll_ifindex = tx_ifindex;
     char s = eh->ether_dhost[5];
     eh->ether_dhost[5] = eh->ether_shost[5];
     eh->ether_shost[5] = s;
 
-    len = sizeof(client_address);  //len is value/result 
-
+    len = sizeof(client_address);
     if (sendto(sockfd, (const char *)buffer, strlen(hello) + sizeof(struct ether_header),
         0, (const struct sockaddr *) &client_address, 
             len) < 0)
