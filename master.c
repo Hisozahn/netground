@@ -51,7 +51,7 @@ int main() {
         perror("recvfrom failed");
         exit(EXIT_FAILURE);
     } 
-    //buffer[n] = '\0'; 
+    buffer[n] = '\0'; 
     printf("Client : %s\n", data); 
     strcpy(data, hello);
     client_address.sll_ifindex = 6; // Bridge
