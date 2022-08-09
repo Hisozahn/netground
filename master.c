@@ -75,6 +75,7 @@ int main(int argc, char *argv[]) {
     strcpy(data, hello);
     client_address.sll_ifindex = tx_ifindex;
     swap_mac(eh->ether_dhost, eh->ether_shost);
+    copy_mac(eh->ether_shost, server_address.sll_addr);
 
     len = sizeof(client_address);
     if (sendto(sockfd, (const char *)buffer, strlen(hello) + sizeof(struct ether_header),
