@@ -26,3 +26,19 @@ parse_mac(const char *str, unsigned char address[8])
         exit(EXIT_FAILURE);
     }
 }
+
+void
+copy_mac(unsigned char dst[ETHER_ADDR_LEN], unsigned char src[ETHER_ADDR_LEN])
+{
+    memcpy(dst, src, ETHER_ADDR_LEN);
+}
+
+void
+swap_mac(unsigned char mac1[ETHER_ADDR_LEN], unsigned char mac2[ETHER_ADDR_LEN])
+{
+    unsigned char tmp[ETHER_ADDR_LEN];
+
+    copy_mac(tmp, mac1);
+    copy_mac(mac1, mac2);
+    copy_mac(mac2, tmp);
+}
