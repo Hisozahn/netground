@@ -13,31 +13,9 @@
 #define MAXLINE 1024
 #define ETHER_TYPE 0x0899 // Custom
 
-static void
-parse_arguments(int argc, char *argv[],
-                int *rx_ifindex,
-                int *tx_ifindex,
-                unsigned char rx_address[8],
-                unsigned char tx_address[8])
-{
-    if (argc != 5) {
-        printf("Wrong argument count, expected 4");
-        exit(EXIT_FAILURE);
-    }
-    
-    *rx_ifindex = (unsigned short)atoi(argv[1]);
-    *tx_ifindex = (unsigned short)atoi(argv[2]);
-    parse_mac(argv[3], rx_address);
-    parse_mac(argv[4], tx_address);
-}
-    
+
 // Driver code 
 int main(int argc, char *argv[]) { 
-    struct sockaddr_ll server_address = {
-        .sll_family = AF_PACKET,
-        .sll_protocol = htons(ETH_P_ALL),
-        .sll_halen = ETH_ALEN,
-    };
     struct sockaddr_ll client_address = {
         .sll_family = AF_PACKET,
         .sll_protocol = htons(ETH_P_ALL),
@@ -50,13 +28,12 @@ int main(int argc, char *argv[]) {
     int sockfd; 
     int n;
 
-    parse_arguments(argc, argv, &client_address.sll_ifindex, &server_address.sll_ifindex,
-                    client_address.sll_addr, server_address.sll_addr);
+    parse_arguments(argc, argv, client_address.sll_addr, &client_address.sll_ifindex);
 
     strcpy(data, hello);
     eh->ether_type = htons(ETHER_TYPE);
-    memcpy(eh->ether_dhost, server_address.sll_addr, ETHER_ADDR_LEN);
-    memcpy(eh->ether_shost, client_address.sll_addr, ETHER_ADDR_LEN);
+    copy_mac(eh->ether_dhost, g_broadcast_address);
+    copy_mac(eh->ether_shost, client_address.sll_addr);
 
     // Creating socket file descriptor 
     if ( (sockfd = socket(AF_PACKET, SOCK_RAW, 0)) < 0 ) { 
@@ -72,18 +49,18 @@ int main(int argc, char *argv[]) {
     }
     
     if (sendto(sockfd, (const char *)buffer, strlen(hello) + sizeof(struct ether_header),  
-        0, (const struct sockaddr *) &server_address, 
-            sizeof(server_address)) < 0)
+        0, (const struct sockaddr *) &client_address, 
+            sizeof(client_address)) < 0)
     {
         perror("sendto failed");
         exit(EXIT_FAILURE);
     }
 
     printf("Hello message sent.\n"); 
-    int len = sizeof (server_address);
+    int len = sizeof (client_address);
 
     if (n = recvfrom(sockfd, (char *)buffer, MAXLINE,  
-                MSG_TRUNC, ( struct sockaddr *) &server_address, 
+                MSG_TRUNC, ( struct sockaddr *) &client_address, 
                 &len) < 0 )
     {
         perror("recvfrom failed");

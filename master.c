@@ -12,22 +12,6 @@
 
 #define MAXLINE 1024
 
-static void
-parse_arguments(int argc, char *argv[],
-                int *rx_ifindex,
-                int *tx_ifindex,
-                unsigned char address[8])
-{
-    if (argc != 4) {
-        printf("Wrong argument count, expected 3");
-        exit(EXIT_FAILURE);
-    }
-    
-    *rx_ifindex = (unsigned short)atoi(argv[1]);
-    *tx_ifindex = (unsigned short)atoi(argv[2]);
-    parse_mac(argv[3], address);
-}
-    
 // Driver code 
 int main(int argc, char *argv[]) { 
     struct sockaddr_ll server_address = {
@@ -40,12 +24,11 @@ int main(int argc, char *argv[]) {
     char buffer[MAXLINE]; 
     struct ether_header *eh = (struct ether_header *) buffer;
     char *data = &(buffer[0]) + sizeof(struct ether_header);
-    int tx_ifindex;
     int sockfd; 
     int len;
     int n; 
 
-    parse_arguments(argc, argv, &server_address.sll_ifindex, &tx_ifindex, server_address.sll_addr);
+    parse_arguments(argc, argv, server_address.sll_addr, &server_address.sll_ifindex);
 
     // Creating socket file descriptor 
     if ( (sockfd = socket(AF_PACKET, SOCK_RAW, 0)) < 0 ) { 
@@ -73,7 +56,7 @@ int main(int argc, char *argv[]) {
     buffer[n] = '\0'; 
     printf("Client : %s\n", data); 
     strcpy(data, hello);
-    client_address.sll_ifindex = tx_ifindex;
+    //client_address.sll_ifindex = tx_ifindex;
     swap_mac(eh->ether_dhost, eh->ether_shost);
     copy_mac(eh->ether_shost, server_address.sll_addr);
 
