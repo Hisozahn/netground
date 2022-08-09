@@ -18,18 +18,16 @@ int main(int argc, char *argv[]) {
         .sll_protocol = htons(CUSTOM_PROTOCOL),
         .sll_halen = ETH_ALEN,
     };
-    struct sockaddr_ll client_address = { 0 };
     char *hello = "Hello from server"; 
     char buffer[MAXLINE]; 
     struct ether_header *eh = (struct ether_header *) buffer;
-    char *data = &(buffer[0]) + sizeof(struct ether_header);
-    int sockaddr_len;
+    char *data = buffer + sizeof(struct ether_header);
     int sockfd; 
     int n; 
 
     parse_arguments(argc, argv, sockaddr.sll_addr, &sockaddr.sll_ifindex);
 
-    if ( (sockfd = socket(AF_PACKET, SOCK_RAW, 0)) < 0 ) { 
+    if ((sockfd = socket(AF_PACKET, SOCK_RAW, 0)) < 0) { 
         perror("socket creation failed"); 
         exit(EXIT_FAILURE); 
     } 
@@ -39,10 +37,8 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE); 
     } 
     
-    sockaddr_len = sizeof(client_address);
-    if (n = recvfrom(sockfd, (char *)buffer, MAXLINE,  
-                     MSG_TRUNC, (struct sockaddr *) &client_address, &sockaddr_len) < 0) {
-        perror("recvfrom failed");
+    if (n = recv(sockfd, (char *)buffer, MAXLINE, MSG_TRUNC) < 0) {
+        perror("recv failed");
         exit(EXIT_FAILURE);
     } 
     buffer[n] = '\0'; 
@@ -51,12 +47,8 @@ int main(int argc, char *argv[]) {
     swap_mac(eh->ether_dhost, eh->ether_shost);
     copy_mac(eh->ether_shost, sockaddr.sll_addr);
 
-    sockaddr_len = sizeof(client_address);
-    if (sendto(sockfd, (const char *)buffer,
-               strlen(hello) + sizeof(struct ether_header),
-               0, (struct sockaddr *) &client_address, sockaddr_len) < 0)
-    {
-        perror("sendto failed"); 
+    if (send(sockfd, buffer, strlen(hello) + sizeof(struct ether_header), 0) < 0) {
+        perror("send failed"); 
         exit(EXIT_FAILURE);
     }
 

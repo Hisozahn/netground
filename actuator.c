@@ -22,7 +22,6 @@ int main(int argc, char *argv[]) {
     char buffer[MAXLINE]; 
     struct ether_header *eh = (struct ether_header *) buffer;
     char *data = buffer + sizeof(struct ether_header);
-    int sockaddr_len = sizeof(sockaddr);
     int sockfd; 
     int n;
 
@@ -44,17 +43,14 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
     
-    if (sendto(sockfd, buffer, strlen(hello) + sizeof(struct ether_header),  
-               0, (struct sockaddr *)&sockaddr, sizeof(sockaddr)) < 0) {
-        perror("sendto failed");
+    if (send(sockfd, buffer, strlen(hello) + sizeof(struct ether_header), 0) < 0) {
+        perror("send failed");
         exit(EXIT_FAILURE);
     }
-
     printf("Hello message sent.\n"); 
 
-    if (n = recvfrom(sockfd, buffer, MAXLINE,  MSG_TRUNC,
-                     (struct sockaddr *)&sockaddr, &sockaddr_len) < 0) {
-        perror("recvfrom failed");
+    if (n = recv(sockfd, buffer, MAXLINE,  MSG_TRUNC) < 0) {
+        perror("recv failed");
         exit(EXIT_FAILURE);
     } 
     buffer[n] = '\0'; 
