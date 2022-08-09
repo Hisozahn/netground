@@ -32,7 +32,6 @@ int main(int argc, char *argv[]) {
     copy_mac(eh->ether_dhost, g_broadcast_address);
     copy_mac(eh->ether_shost, sockaddr.sll_addr);
 
-    // Creating socket file descriptor 
     if ((sockfd = socket(AF_PACKET, SOCK_RAW, 0)) < 0) { 
         perror("socket creation failed"); 
         exit(EXIT_FAILURE); 
