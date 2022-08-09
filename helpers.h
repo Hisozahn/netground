@@ -3,6 +3,8 @@
 
 #include <net/ethernet.h> 
 
+#define CUSTOM_PROTOCOL 0x0899
+
 extern const unsigned char g_broadcast_address[];
 
 void parse_mac(const char *str, unsigned char address[ETHER_ADDR_LEN]);

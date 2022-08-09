@@ -15,7 +15,7 @@
 int main(int argc, char *argv[]) { 
     struct sockaddr_ll sockaddr = {
         .sll_family = AF_PACKET,
-        .sll_protocol = htons(ETH_P_ALL),
+        .sll_protocol = htons(CUSTOM_PROTOCOL),
         .sll_halen = ETH_ALEN,
     };
     struct sockaddr_ll client_address = { 0 };

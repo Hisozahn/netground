@@ -11,12 +11,11 @@
 #include "helpers.h"
 
 #define MAXLINE 1024
-#define ETHER_TYPE 0x0899 // Custom
 
 int main(int argc, char *argv[]) { 
     struct sockaddr_ll sockaddr = {
         .sll_family = AF_PACKET,
-        .sll_protocol = htons(ETH_P_ALL),
+        .sll_protocol = htons(CUSTOM_PROTOCOL),
         .sll_halen = ETH_ALEN,
     };
     char *hello = "Hello from client"; 
@@ -30,7 +29,7 @@ int main(int argc, char *argv[]) {
     parse_arguments(argc, argv, sockaddr.sll_addr, &sockaddr.sll_ifindex);
 
     strcpy(data, hello);
-    eh->ether_type = htons(ETHER_TYPE);
+    eh->ether_type = htons(CUSTOM_PROTOCOL);
     copy_mac(eh->ether_dhost, g_broadcast_address);
     copy_mac(eh->ether_shost, sockaddr.sll_addr);
 
