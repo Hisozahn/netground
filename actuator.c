@@ -9,15 +9,11 @@
 #include <arpa/inet.h>
 
 #include "helpers.h"
+#include "net.h"
 
 #define MAXLINE 1024
 
 int main(int argc, char *argv[]) { 
-    struct sockaddr_ll sockaddr = {
-        .sll_family = AF_PACKET,
-        .sll_protocol = htons(CUSTOM_PROTOCOL),
-        .sll_halen = ETH_ALEN,
-    };
     char *hello = "Hello from client"; 
     char buffer[MAXLINE]; 
     struct ether_header *eh = (struct ether_header *) buffer;
@@ -25,22 +21,12 @@ int main(int argc, char *argv[]) {
     int sockfd; 
     int n;
 
-    parse_arguments(argc, argv, sockaddr.sll_addr, &sockaddr.sll_ifindex);
+    init_networking(argc, argv, &sockfd);
 
     strcpy(data, hello);
     eh->ether_type = htons(CUSTOM_PROTOCOL);
     copy_mac(eh->ether_dhost, g_broadcast_address);
-    copy_mac(eh->ether_shost, sockaddr.sll_addr);
-
-    if ((sockfd = socket(AF_PACKET, SOCK_RAW, 0)) < 0) { 
-        perror("socket creation failed"); 
-        exit(EXIT_FAILURE); 
-    }
-
-    if (bind(sockfd, (struct sockaddr *)&sockaddr, sizeof(sockaddr)) < 0) {
-        perror("bind failed");
-        exit(EXIT_FAILURE);
-    }
+    copy_mac(eh->ether_shost, get_own_mac());
     
     if (send(sockfd, buffer, strlen(hello) + sizeof(struct ether_header), 0) < 0) {
         perror("send failed");

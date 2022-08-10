@@ -15,8 +15,6 @@
 #define SYSFS_IFACE_INDEX "/ifindex"
 #define MAC_STR_LEN 17
 
-const unsigned char g_broadcast_address[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
-
 void
 parse_mac(const char *str, unsigned char address[ETHER_ADDR_LEN])
 {
